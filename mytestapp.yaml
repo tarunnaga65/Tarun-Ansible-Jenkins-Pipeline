@@ -1,0 +1,31 @@
+- name: Deploy Application
+  hosts: all
+  become: true
+  vars:
+    app_dir: /opt/myapp
+    git_repo: https://github.com/myuser/myapp.git
+
+  tasks:
+    - name: Clone the git repository
+      git:
+        repo: "{{ git_repo }}"
+        dest: "{{ app_dir }}"
+        version: master
+
+    - name: Install dependencies
+      pip:
+        name:
+          - Flask
+          - requests
+        state: present
+
+    - name: Copy the configuration file
+      template:
+        src: config.j2
+        dest: "{{ app_dir }}/config.py"
+
+    - name: Start the application
+      systemd:
+        name: myapp
+        state: started
+        daemon_reload: yes
